@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pet Mood Tracker</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #fef6e4;
+      color: #333;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px 16px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      color: #888;
+      margin-bottom: 30px;
+    }
+
+    /* Pet name input */
+    .pet-name-section {
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .pet-name-section input {
+      font-size: 1.1rem;
+      padding: 8px 14px;
+      border: 2px dashed #f3d2c1;
+      border-radius: 12px;
+      background: #fff;
+      text-align: center;
+      width: 220px;
+      outline: none;
+    }
+
+    .pet-name-section input:focus {
+      border-color: #f582ae;
+    }
+
+    /* Mood picker */
+    .mood-picker {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 30px;
+    }
+
+    .mood-btn {
+      font-size: 2.2rem;
+      background: #fff;
+      border: 3px solid transparent;
+      border-radius: 16px;
+      width: 72px;
+      height: 72px;
+      cursor: pointer;
+      transition: transform 0.15s, border-color 0.15s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mood-btn:hover {
+      transform: scale(1.12);
+    }
+
+    .mood-btn.selected {
+      border-color: #f582ae;
+      background: #fff0f5;
+    }
+
+    .mood-label {
+      font-size: 0.6rem;
+      margin-top: 2px;
+      color: #888;
+    }
+
+    .log-btn {
+      background: #f582ae;
+      color: #fff;
+      border: none;
+      padding: 12px 36px;
+      font-size: 1.1rem;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-bottom: 36px;
+    }
+
+    .log-btn:hover { background: #e0609a; }
+    .log-btn:disabled { background: #ccc; cursor: default; }
+
+    /* Toast */
+    .toast {
+      background: #8bd3dd;
+      color: #fff;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-weight: bold;
+      font-size: 1.15rem;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .toast.show { display: block; }
+
+    /* Weekly summary */
+    .summary {
+      background: #fff;
+      border-radius: 20px;
+      padding: 24px;
+      width: 100%;
+      max-width: 500px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+
+    .summary h2 {
+      font-size: 1.2rem;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .day-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 4px;
+      border-bottom: 1px solid #f3f3f3;
+    }
+
+    .day-row:last-child { border-bottom: none; }
+
+    .day-name {
+      width: 90px;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .day-mood {
+      font-size: 1.6rem;
+    }
+
+    .day-no-entry {
+      color: #ccc;
+      font-size: 0.85rem;
+    }
+
+    .clear-btn {
+      display: block;
+      margin: 20px auto 0;
+      background: none;
+      border: 1px solid #ddd;
+      padding: 6px 18px;
+      border-radius: 12px;
+      color: #aaa;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+
+    .clear-btn:hover { color: #f582ae; border-color: #f582ae; }
+  </style>
+</head>
+<body>
+
+  <h1>🐾 Pet Mood Tracker</h1>
+  <p class="subtitle">How's your furry friend feeling today?</p>
+
+  <div class="pet-name-section">
+    <input type="text" id="petName" placeholder="Your pet's name" maxlength="20">
+  </div>
+
+  <div class="mood-picker" id="moodPicker"></div>
+
+  <button class="log-btn" id="logBtn" disabled>Log Today's Mood</button>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="summary">
+    <h2>📅 This Week</h2>
+    <div id="weekSummary"></div>
+    <button class="clear-btn" id="clearBtn">Clear all data</button>
+  </div>
+
+  <script>
+    const MOODS = [
+      { emoji: '😸', label: 'Happy' },
+      { emoji: '😴', label: 'Sleepy' },
+      { emoji: '⚡', label: 'Zoomies' },
+      { emoji: '🥺', label: 'Clingy' },
+      { emoji: '😾', label: 'Grumpy' },
+      { emoji: '🤒', label: 'Sick' },
+    ];
+
+    const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+    let selectedMood = null;
+    let moodData = {};
+    let storedPetName = '';
+
+    // --- Local storage with fallback ---
+    function storageAvailable() {
+      try {
+        localStorage.setItem('__test', '1');
+        localStorage.removeItem('__test');
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    const useStorage = storageAvailable();
+
+    function loadData() {
+      if (useStorage) {
+        moodData = JSON.parse(localStorage.getItem('petMoodData') || '{}');
+      }
+      return moodData;
+    }
+
+    function saveData(data) {
+      moodData = data;
+      if (useStorage) {
+        localStorage.setItem('petMoodData', JSON.stringify(data));
+      }
+    }
+
+    function todayKey() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    // --- Render mood picker ---
+    const picker = document.getElementById('moodPicker');
+    MOODS.forEach((mood, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'mood-btn';
+      btn.innerHTML = `${mood.emoji}<span class="mood-label">${mood.label}</span>`;
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedMood = i;
+        document.getElementById('logBtn').disabled = false;
+      });
+      picker.appendChild(btn);
+    });
+
+    // --- Pet name persistence ---
+    const petNameInput = document.getElementById('petName');
+    if (useStorage) {
+      petNameInput.value = localStorage.getItem('petName') || '';
+    }
+    petNameInput.addEventListener('input', () => {
+      if (useStorage) localStorage.setItem('petName', petNameInput.value);
+    });
+
+    // --- Log mood ---
+    document.getElementById('logBtn').addEventListener('click', () => {
+      if (selectedMood === null) return;
+      const data = loadData();
+      data[todayKey()] = selectedMood;
+      saveData(data);
+      showToast(`Logged: ${MOODS[selectedMood].emoji} ${MOODS[selectedMood].label}`);
+      renderWeek();
+    });
+
+    // --- Toast ---
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 4000);
+    }
+
+    // --- Render weekly summary ---
+    function renderWeek() {
+      const data = loadData();
+      const container = document.getElementById('weekSummary');
+      container.innerHTML = '';
+
+      const today = new Date();
+      const dayOfWeek = today.getDay(); // 0 = Sunday
+
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(today);
+        d.setDate(today.getDate() - dayOfWeek + i);
+        const key = d.toISOString().slice(0, 10);
+        const isToday = key === todayKey();
+
+        const row = document.createElement('div');
+        row.className = 'day-row';
+
+        const name = document.createElement('span');
+        name.className = 'day-name';
+        name.textContent = DAY_NAMES[i] + (isToday ? ' ✨' : '');
+
+        const mood = document.createElement('span');
+        if (data[key] !== undefined) {
+          mood.className = 'day-mood';
+          mood.textContent = `${MOODS[data[key]].emoji} ${MOODS[data[key]].label}`;
+        } else {
+          mood.className = 'day-no-entry';
+          mood.textContent = i <= dayOfWeek ? 'No entry' : '—';
+        }
+
+        row.appendChild(name);
+        row.appendChild(mood);
+        container.appendChild(row);
+      }
+    }
+
+    // --- Clear data ---
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      if (confirm('Clear all mood data?')) {
+        localStorage.removeItem('petMoodData');
+        renderWeek();
+        showToast('Data cleared!');
+      }
+    });
+
+    // --- Init ---
+    renderWeek();
+  </script>
+</body>
+</html>
