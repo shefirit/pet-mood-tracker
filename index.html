@@ -4,333 +4,967 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pet Mood Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg: #f8f6ff;
+      --card: #ffffff;
+      --primary: #7c5cfc;
+      --primary-light: #ede8ff;
+      --primary-dark: #5a3de6;
+      --accent: #ff6b9d;
+      --accent-light: #ffe0eb;
+      --text: #1a1a2e;
+      --text-secondary: #6b7280;
+      --border: #e5e7eb;
+      --success: #10b981;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+      --shadow-lg: 0 8px 30px rgba(0,0,0,0.1);
+      --radius: 16px;
+    }
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #fef6e4;
-      color: #333;
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
+      padding-bottom: 80px;
+    }
+
+    /* ---- Header ---- */
+    .header {
+      background: linear-gradient(135deg, #7c5cfc 0%, #ff6b9d 100%);
+      color: white;
+      padding: 32px 20px 48px;
+      text-align: center;
+      position: relative;
+    }
+
+    .header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .header p {
+      opacity: 0.85;
+      font-size: 0.95rem;
+    }
+
+    .header-wave {
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      width: 100%;
+      height: 24px;
+      background: var(--bg);
+      border-radius: 24px 24px 0 0;
+    }
+
+    /* ---- Container ---- */
+    .container {
+      max-width: 480px;
+      margin: -20px auto 0;
+      padding: 0 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ---- Cards ---- */
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
+    }
+
+    .card-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+      margin-bottom: 14px;
+    }
+
+    /* ---- Pet Name ---- */
+    .pet-input-row {
       display: flex;
-      flex-direction: column;
       align-items: center;
-      padding: 30px 16px;
+      gap: 10px;
     }
 
-    h1 {
-      font-size: 2rem;
-      margin-bottom: 6px;
-    }
-
-    .subtitle {
-      color: #888;
-      margin-bottom: 30px;
-    }
-
-    /* Pet name input */
-    .pet-name-section {
-      margin-bottom: 24px;
-      text-align: center;
-    }
-
-    .pet-name-section input {
-      font-size: 1.1rem;
-      padding: 8px 14px;
-      border: 2px dashed #f3d2c1;
-      border-radius: 12px;
-      background: #fff;
-      text-align: center;
-      width: 220px;
-      outline: none;
-    }
-
-    .pet-name-section input:focus {
-      border-color: #f582ae;
-    }
-
-    /* Mood picker */
-    .mood-picker {
+    .pet-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--primary-light);
       display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
+      align-items: center;
       justify-content: center;
-      margin-bottom: 30px;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .pet-avatar:hover { transform: scale(1.1); }
+
+    .pet-input-row input {
+      flex: 1;
+      font-size: 1rem;
+      font-family: inherit;
+      padding: 10px 14px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      background: #fafafa;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .pet-input-row input:focus {
+      border-color: var(--primary);
+      background: white;
+    }
+
+    /* ---- Pet type selector (hidden by default) ---- */
+    .pet-type-picker {
+      display: none;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    .pet-type-picker.open { display: flex; }
+
+    .pet-type-btn {
+      font-size: 1.5rem;
+      background: var(--bg);
+      border: 2px solid transparent;
+      border-radius: 12px;
+      width: 48px;
+      height: 48px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .pet-type-btn:hover { transform: scale(1.15); }
+    .pet-type-btn.selected { border-color: var(--primary); background: var(--primary-light); }
+
+    /* ---- Mood Picker ---- */
+    .mood-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
     }
 
     .mood-btn {
-      font-size: 2.2rem;
-      background: #fff;
-      border: 3px solid transparent;
-      border-radius: 16px;
-      width: 72px;
-      height: 72px;
-      cursor: pointer;
-      transition: transform 0.15s, border-color 0.15s;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      gap: 4px;
+      padding: 12px 4px;
+      background: var(--bg);
+      border: 2px solid transparent;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
     }
 
-    .mood-btn:hover {
-      transform: scale(1.12);
-    }
+    .mood-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
 
     .mood-btn.selected {
-      border-color: #f582ae;
-      background: #fff0f5;
+      border-color: var(--primary);
+      background: var(--primary-light);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
     }
 
-    .mood-label {
-      font-size: 0.6rem;
-      margin-top: 2px;
-      color: #888;
+    .mood-emoji { font-size: 1.8rem; line-height: 1; }
+    .mood-label { font-size: 0.65rem; font-weight: 600; color: var(--text-secondary); }
+
+    /* ---- Note input ---- */
+    .note-section {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
     }
 
-    .log-btn {
-      background: #f582ae;
-      color: #fff;
-      border: none;
-      padding: 12px 36px;
-      font-size: 1.1rem;
-      border-radius: 30px;
-      cursor: pointer;
-      transition: background 0.2s;
-      margin-bottom: 36px;
-    }
-
-    .log-btn:hover { background: #e0609a; }
-    .log-btn:disabled { background: #ccc; cursor: default; }
-
-    /* Toast */
-    .toast {
-      background: #8bd3dd;
-      color: #fff;
-      padding: 14px 28px;
-      border-radius: 12px;
-      font-weight: bold;
-      font-size: 1.15rem;
-      margin-bottom: 20px;
-      display: none;
-    }
-
-    .toast.show { display: block; }
-
-    /* Weekly summary */
-    .summary {
-      background: #fff;
-      border-radius: 20px;
-      padding: 24px;
+    .note-input {
       width: 100%;
-      max-width: 500px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      font-family: inherit;
+      font-size: 0.9rem;
+      padding: 10px 14px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      background: #fafafa;
+      outline: none;
+      resize: none;
+      transition: border-color 0.2s;
     }
 
-    .summary h2 {
-      font-size: 1.2rem;
+    .note-input:focus { border-color: var(--primary); background: white; }
+
+    /* ---- Log button ---- */
+    .log-btn {
+      width: 100%;
+      padding: 14px;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 600;
+      color: white;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 15px rgba(124, 92, 252, 0.3);
       margin-bottom: 16px;
+    }
+
+    .log-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(124, 92, 252, 0.4); }
+    .log-btn:active { transform: translateY(0); }
+    .log-btn:disabled { background: #d1d5db; box-shadow: none; cursor: default; transform: none; }
+
+    /* ---- Toast ---- */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--text);
+      color: white;
+      padding: 14px 24px;
+      border-radius: 14px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      box-shadow: var(--shadow-lg);
+      transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 100;
+      white-space: nowrap;
+    }
+
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ---- Tabs ---- */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 16px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 8px;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      background: transparent;
+      color: var(--text-secondary);
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      background: white;
+      color: var(--text);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* ---- Week View ---- */
+    .week-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
       text-align: center;
     }
 
-    .day-row {
+    .week-day {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 2px 10px;
+      border-radius: 12px;
+      background: var(--bg);
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .week-day.today {
+      background: var(--primary-light);
+      box-shadow: inset 0 0 0 2px var(--primary);
+    }
+
+    .week-day.has-entry { cursor: pointer; }
+    .week-day.has-entry:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+    .week-day-name {
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+    }
+
+    .week-day-num {
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .week-day-mood {
+      font-size: 1.3rem;
+      line-height: 1;
+      min-height: 1.3rem;
+    }
+
+    .week-day-empty {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ddd;
+    }
+
+    /* ---- Streak & Stats ---- */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 14px 8px;
+      background: var(--bg);
+      border-radius: 12px;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .stat-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-top: 2px;
+      text-transform: uppercase;
+    }
+
+    /* ---- History / Calendar ---- */
+    .history-tab, .stats-tab { display: none; }
+    .history-tab.active, .stats-tab.active { display: block; }
+    .week-tab { display: none; }
+    .week-tab.active { display: block; }
+
+    .month-nav {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 8px 4px;
-      border-bottom: 1px solid #f3f3f3;
+      margin-bottom: 12px;
     }
 
-    .day-row:last-child { border-bottom: none; }
+    .month-nav button {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: all 0.15s;
+    }
 
-    .day-name {
-      width: 90px;
+    .month-nav button:hover { background: var(--primary-light); }
+
+    .month-nav span {
       font-weight: 600;
       font-size: 0.95rem;
     }
 
-    .day-mood {
-      font-size: 1.6rem;
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      text-align: center;
     }
 
-    .day-no-entry {
-      color: #ccc;
+    .cal-header {
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      padding: 4px 0;
+      text-transform: uppercase;
+    }
+
+    .cal-day {
+      aspect-ratio: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      font-size: 0.75rem;
+      position: relative;
+      cursor: default;
+    }
+
+    .cal-day.has-mood { background: var(--primary-light); cursor: pointer; }
+    .cal-day.has-mood:hover { background: #d9d0ff; }
+    .cal-day.is-today { box-shadow: inset 0 0 0 2px var(--primary); }
+    .cal-day-emoji { font-size: 1.1rem; line-height: 1; }
+    .cal-day-num { font-size: 0.65rem; color: var(--text-secondary); }
+
+    /* ---- Mood frequency chart ---- */
+    .freq-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+    }
+
+    .freq-row + .freq-row { border-top: 1px solid var(--border); }
+
+    .freq-emoji { font-size: 1.4rem; width: 36px; text-align: center; }
+
+    .freq-bar-track {
+      flex: 1;
+      height: 10px;
+      background: var(--bg);
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    .freq-bar {
+      height: 100%;
+      border-radius: 5px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .freq-count {
       font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      width: 28px;
+      text-align: right;
     }
 
-    .clear-btn {
-      display: block;
-      margin: 20px auto 0;
-      background: none;
-      border: 1px solid #ddd;
-      padding: 6px 18px;
+    /* ---- Tooltip (for day click) ---- */
+    .tooltip {
+      display: none;
+      position: fixed;
+      z-index: 200;
+      background: var(--text);
+      color: white;
+      padding: 12px 16px;
       border-radius: 12px;
-      color: #aaa;
-      cursor: pointer;
       font-size: 0.85rem;
+      box-shadow: var(--shadow-lg);
+      max-width: 220px;
     }
 
-    .clear-btn:hover { color: #f582ae; border-color: #f582ae; }
+    .tooltip.open { display: block; }
+
+    .tooltip-date { font-weight: 600; margin-bottom: 4px; }
+    .tooltip-mood { font-size: 1.2rem; }
+    .tooltip-note { margin-top: 6px; opacity: 0.8; font-size: 0.8rem; }
+
+    /* ---- Footer actions ---- */
+    .footer-actions {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .small-btn {
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 500;
+      padding: 6px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.15s;
+      border: 1px solid var(--border);
+      background: white;
+      color: var(--text-secondary);
+    }
+
+    .small-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    .small-btn.danger:hover { border-color: #ef4444; color: #ef4444; }
+
+    /* ---- Animations ---- */
+    @keyframes popIn {
+      0% { transform: scale(0.8); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .card { animation: popIn 0.35s ease-out; }
+
+    /* ---- Responsive ---- */
+    @media (max-width: 380px) {
+      .mood-grid { grid-template-columns: repeat(3, 1fr); }
+      .stats-row { grid-template-columns: 1fr 1fr; }
+    }
   </style>
 </head>
 <body>
 
-  <h1>🐾 Pet Mood Tracker</h1>
-  <p class="subtitle">How's your furry friend feeling today?</p>
-
-  <div class="pet-name-section">
-    <input type="text" id="petName" placeholder="Your pet's name" maxlength="20">
+  <div class="header">
+    <h1>🐾 Pet Mood Tracker</h1>
+    <p>How's your furry friend feeling today?</p>
+    <div class="header-wave"></div>
   </div>
 
-  <div class="mood-picker" id="moodPicker"></div>
+  <div class="container">
 
-  <button class="log-btn" id="logBtn" disabled>Log Today's Mood</button>
+    <!-- Pet Name Card -->
+    <div class="card">
+      <div class="card-title">Your Pet</div>
+      <div class="pet-input-row">
+        <div class="pet-avatar" id="petAvatar" title="Click to change pet type">🐱</div>
+        <input type="text" id="petName" placeholder="Enter your pet's name..." maxlength="20">
+      </div>
+      <div class="pet-type-picker" id="petTypePicker"></div>
+    </div>
 
+    <!-- Mood Card -->
+    <div class="card">
+      <div class="card-title">Today's Mood</div>
+      <div class="mood-grid" id="moodPicker"></div>
+      <div class="note-section">
+        <textarea class="note-input" id="noteInput" rows="2" placeholder="Add a note (optional)..."></textarea>
+      </div>
+    </div>
+
+    <!-- Log Button -->
+    <button class="log-btn" id="logBtn" disabled>Log Today's Mood</button>
+
+    <!-- Data Card with Tabs -->
+    <div class="card">
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="week">This Week</button>
+        <button class="tab-btn" data-tab="history">Calendar</button>
+        <button class="tab-btn" data-tab="stats">Stats</button>
+      </div>
+
+      <!-- Week Tab -->
+      <div class="week-tab active" id="weekTab">
+        <div class="week-grid" id="weekGrid"></div>
+      </div>
+
+      <!-- History / Calendar Tab -->
+      <div class="history-tab" id="historyTab">
+        <div class="month-nav">
+          <button id="prevMonth">&larr;</button>
+          <span id="monthLabel"></span>
+          <button id="nextMonth">&rarr;</button>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+
+      <!-- Stats Tab -->
+      <div class="stats-tab" id="statsTab">
+        <div class="stats-row" id="statsRow"></div>
+        <div style="margin-top: 16px;" id="freqChart"></div>
+      </div>
+    </div>
+
+    <!-- Footer actions -->
+    <div class="footer-actions">
+      <button class="small-btn" id="exportBtn">Export Data</button>
+      <button class="small-btn danger" id="clearBtn">Clear All</button>
+    </div>
+
+  </div>
+
+  <!-- Toast -->
   <div class="toast" id="toast"></div>
 
-  <div class="summary">
-    <h2>📅 This Week</h2>
-    <div id="weekSummary"></div>
-    <button class="clear-btn" id="clearBtn">Clear all data</button>
-  </div>
+  <!-- Tooltip -->
+  <div class="tooltip" id="tooltip"></div>
 
   <script>
+    // ===================== CONFIG =====================
     const MOODS = [
-      { emoji: '😸', label: 'Happy' },
-      { emoji: '😴', label: 'Sleepy' },
-      { emoji: '⚡', label: 'Zoomies' },
-      { emoji: '🥺', label: 'Clingy' },
-      { emoji: '😾', label: 'Grumpy' },
-      { emoji: '🤒', label: 'Sick' },
+      { emoji: '😸', label: 'Happy', color: '#fbbf24' },
+      { emoji: '😴', label: 'Sleepy', color: '#818cf8' },
+      { emoji: '⚡', label: 'Zoomies', color: '#f97316' },
+      { emoji: '🥺', label: 'Clingy', color: '#f472b6' },
+      { emoji: '😾', label: 'Grumpy', color: '#ef4444' },
+      { emoji: '🤒', label: 'Sick', color: '#6ee7b7' },
+      { emoji: '😻', label: 'Loving', color: '#ec4899' },
+      { emoji: '🐾', label: 'Playful', color: '#8b5cf6' },
     ];
 
-    const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const PET_TYPES = ['🐱','🐶','🐹','🐰','🐦','🐢','🐠','🦎','🐴','🐍'];
 
+    const DAY_SHORT = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+    const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+    // ===================== STATE =====================
     let selectedMood = null;
     let moodData = {};
-    let storedPetName = '';
+    let calMonth = new Date().getMonth();
+    let calYear = new Date().getFullYear();
 
-    // --- Local storage with fallback ---
-    function storageAvailable() {
-      try {
-        localStorage.setItem('__test', '1');
-        localStorage.removeItem('__test');
-        return true;
-      } catch (e) {
-        return false;
-      }
+    // ===================== STORAGE =====================
+    function storageOK() {
+      try { localStorage.setItem('__t','1'); localStorage.removeItem('__t'); return true; }
+      catch { return false; }
     }
+    const canStore = storageOK();
 
-    const useStorage = storageAvailable();
-
-    function loadData() {
-      if (useStorage) {
-        moodData = JSON.parse(localStorage.getItem('petMoodData') || '{}');
-      }
-      return moodData;
+    function load(key, fallback) {
+      if (!canStore) return fallback;
+      try { return JSON.parse(localStorage.getItem(key)) || fallback; } catch { return fallback; }
     }
+    function save(key, val) { if (canStore) localStorage.setItem(key, JSON.stringify(val)); }
 
-    function saveData(data) {
-      moodData = data;
-      if (useStorage) {
-        localStorage.setItem('petMoodData', JSON.stringify(data));
-      }
-    }
+    function loadData() { moodData = load('petMoodData', {}); return moodData; }
+    function saveData(d) { moodData = d; save('petMoodData', d); }
 
     function todayKey() {
-      return new Date().toISOString().slice(0, 10);
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     }
 
-    // --- Render mood picker ---
+    // ===================== PET NAME & TYPE =====================
+    const petNameInput = document.getElementById('petName');
+    const petAvatar = document.getElementById('petAvatar');
+    const petTypePicker = document.getElementById('petTypePicker');
+
+    petNameInput.value = load('petName', '') || '';
+    petNameInput.addEventListener('input', () => save('petName', petNameInput.value));
+
+    let petType = load('petType', '🐱');
+    petAvatar.textContent = petType;
+
+    PET_TYPES.forEach(p => {
+      const btn = document.createElement('button');
+      btn.className = 'pet-type-btn' + (p === petType ? ' selected' : '');
+      btn.textContent = p;
+      btn.addEventListener('click', () => {
+        petType = p;
+        petAvatar.textContent = p;
+        save('petType', p);
+        petTypePicker.querySelectorAll('.pet-type-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        petTypePicker.classList.remove('open');
+      });
+      petTypePicker.appendChild(btn);
+    });
+
+    petAvatar.addEventListener('click', () => petTypePicker.classList.toggle('open'));
+
+    // ===================== MOOD PICKER =====================
     const picker = document.getElementById('moodPicker');
     MOODS.forEach((mood, i) => {
       const btn = document.createElement('button');
       btn.className = 'mood-btn';
-      btn.innerHTML = `${mood.emoji}<span class="mood-label">${mood.label}</span>`;
+      btn.innerHTML = `<span class="mood-emoji">${mood.emoji}</span><span class="mood-label">${mood.label}</span>`;
       btn.addEventListener('click', () => {
-        document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+        picker.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
         btn.classList.add('selected');
         selectedMood = i;
         document.getElementById('logBtn').disabled = false;
       });
       picker.appendChild(btn);
+
+      // Pre-select if already logged today
+      const data = loadData();
+      const entry = data[todayKey()];
+      if (entry && entry.mood === i) {
+        btn.classList.add('selected');
+        selectedMood = i;
+        document.getElementById('logBtn').disabled = false;
+      }
     });
 
-    // --- Pet name persistence ---
-    const petNameInput = document.getElementById('petName');
-    if (useStorage) {
-      petNameInput.value = localStorage.getItem('petName') || '';
-    }
-    petNameInput.addEventListener('input', () => {
-      if (useStorage) localStorage.setItem('petName', petNameInput.value);
-    });
+    // Pre-fill note if already logged today
+    (() => {
+      const data = loadData();
+      const entry = data[todayKey()];
+      if (entry && entry.note) {
+        document.getElementById('noteInput').value = entry.note;
+      }
+    })();
 
-    // --- Log mood ---
+    // ===================== LOG MOOD =====================
     document.getElementById('logBtn').addEventListener('click', () => {
       if (selectedMood === null) return;
       const data = loadData();
-      data[todayKey()] = selectedMood;
+      const note = document.getElementById('noteInput').value.trim();
+      data[todayKey()] = { mood: selectedMood, note: note, time: new Date().toLocaleTimeString() };
       saveData(data);
       showToast(`Logged: ${MOODS[selectedMood].emoji} ${MOODS[selectedMood].label}`);
-      renderWeek();
+      renderAll();
     });
 
-    // --- Toast ---
+    // ===================== TOAST =====================
+    let toastTimer;
     function showToast(msg) {
-      const toast = document.getElementById('toast');
-      toast.textContent = msg;
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 4000);
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
     }
 
-    // --- Render weekly summary ---
+    // ===================== TABS =====================
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('weekTab').classList.toggle('active', btn.dataset.tab === 'week');
+        document.getElementById('historyTab').classList.toggle('active', btn.dataset.tab === 'history');
+        document.getElementById('statsTab').classList.toggle('active', btn.dataset.tab === 'stats');
+        if (btn.dataset.tab === 'history') renderCalendar();
+        if (btn.dataset.tab === 'stats') renderStats();
+      });
+    });
+
+    // ===================== WEEK VIEW =====================
     function renderWeek() {
       const data = loadData();
-      const container = document.getElementById('weekSummary');
-      container.innerHTML = '';
-
+      const grid = document.getElementById('weekGrid');
+      grid.innerHTML = '';
       const today = new Date();
-      const dayOfWeek = today.getDay(); // 0 = Sunday
+      const dow = today.getDay();
 
       for (let i = 0; i < 7; i++) {
         const d = new Date(today);
-        d.setDate(today.getDate() - dayOfWeek + i);
-        const key = d.toISOString().slice(0, 10);
+        d.setDate(today.getDate() - dow + i);
+        const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
         const isToday = key === todayKey();
+        const entry = data[key];
 
-        const row = document.createElement('div');
-        row.className = 'day-row';
+        const col = document.createElement('div');
+        col.className = 'week-day' + (isToday ? ' today' : '') + (entry ? ' has-entry' : '');
 
-        const name = document.createElement('span');
-        name.className = 'day-name';
-        name.textContent = DAY_NAMES[i] + (isToday ? ' ✨' : '');
+        const dayName = document.createElement('div');
+        dayName.className = 'week-day-name';
+        dayName.textContent = DAY_SHORT[i];
 
-        const mood = document.createElement('span');
-        if (data[key] !== undefined) {
-          mood.className = 'day-mood';
-          mood.textContent = `${MOODS[data[key]].emoji} ${MOODS[data[key]].label}`;
+        const dayNum = document.createElement('div');
+        dayNum.className = 'week-day-num';
+        dayNum.textContent = d.getDate();
+
+        const moodEl = document.createElement('div');
+        if (entry) {
+          moodEl.className = 'week-day-mood';
+          moodEl.textContent = MOODS[entry.mood].emoji;
+          col.addEventListener('click', (e) => showTooltip(e, key, entry));
         } else {
-          mood.className = 'day-no-entry';
-          mood.textContent = i <= dayOfWeek ? 'No entry' : '—';
+          moodEl.innerHTML = '<div class="week-day-empty"></div>';
         }
 
-        row.appendChild(name);
-        row.appendChild(mood);
-        container.appendChild(row);
+        col.appendChild(dayName);
+        col.appendChild(dayNum);
+        col.appendChild(moodEl);
+        grid.appendChild(col);
       }
     }
 
-    // --- Clear data ---
+    // ===================== CALENDAR VIEW =====================
+    function renderCalendar() {
+      const data = loadData();
+      const grid = document.getElementById('calGrid');
+      grid.innerHTML = '';
+
+      document.getElementById('monthLabel').textContent = `${MONTH_NAMES[calMonth]} ${calYear}`;
+
+      DAY_SHORT.forEach(d => {
+        const h = document.createElement('div');
+        h.className = 'cal-header';
+        h.textContent = d;
+        grid.appendChild(h);
+      });
+
+      const firstDay = new Date(calYear, calMonth, 1).getDay();
+      const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+
+      for (let i = 0; i < firstDay; i++) {
+        grid.appendChild(document.createElement('div'));
+      }
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const key = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const entry = data[key];
+        const isToday = key === todayKey();
+
+        const cell = document.createElement('div');
+        cell.className = 'cal-day' + (entry ? ' has-mood' : '') + (isToday ? ' is-today' : '');
+
+        if (entry) {
+          cell.innerHTML = `<span class="cal-day-emoji">${MOODS[entry.mood].emoji}</span>`;
+          cell.addEventListener('click', (e) => showTooltip(e, key, entry));
+        } else {
+          cell.innerHTML = `<span class="cal-day-num">${d}</span>`;
+        }
+
+        grid.appendChild(cell);
+      }
+    }
+
+    document.getElementById('prevMonth').addEventListener('click', () => {
+      calMonth--;
+      if (calMonth < 0) { calMonth = 11; calYear--; }
+      renderCalendar();
+    });
+
+    document.getElementById('nextMonth').addEventListener('click', () => {
+      calMonth++;
+      if (calMonth > 11) { calMonth = 0; calYear++; }
+      renderCalendar();
+    });
+
+    // ===================== TOOLTIP =====================
+    function showTooltip(e, key, entry) {
+      const tip = document.getElementById('tooltip');
+      const date = new Date(key + 'T12:00:00');
+      tip.innerHTML = `
+        <div class="tooltip-date">${DAY_NAMES[date.getDay()]}, ${MONTH_NAMES[date.getMonth()]} ${date.getDate()}</div>
+        <div class="tooltip-mood">${MOODS[entry.mood].emoji} ${MOODS[entry.mood].label}</div>
+        ${entry.note ? `<div class="tooltip-note">"${entry.note}"</div>` : ''}
+        ${entry.time ? `<div class="tooltip-note">Logged at ${entry.time}</div>` : ''}
+      `;
+
+      const rect = e.target.getBoundingClientRect();
+      tip.style.top = (rect.bottom + 8) + 'px';
+      tip.style.left = Math.min(rect.left, window.innerWidth - 230) + 'px';
+      tip.classList.add('open');
+
+      const close = (ev) => {
+        if (!tip.contains(ev.target)) {
+          tip.classList.remove('open');
+          document.removeEventListener('click', close);
+        }
+      };
+      setTimeout(() => document.addEventListener('click', close), 10);
+    }
+
+    // ===================== STATS =====================
+    function renderStats() {
+      const data = loadData();
+      const entries = Object.entries(data);
+      const total = entries.length;
+
+      // Streak calculation
+      let streak = 0;
+      const d = new Date();
+      while (true) {
+        const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        if (data[key]) { streak++; d.setDate(d.getDate() - 1); }
+        else break;
+      }
+
+      // Most common mood
+      const freq = {};
+      entries.forEach(([, e]) => { freq[e.mood] = (freq[e.mood] || 0) + 1; });
+      const topMood = Object.entries(freq).sort((a,b) => b[1] - a[1])[0];
+
+      // Stats row
+      const row = document.getElementById('statsRow');
+      row.innerHTML = `
+        <div class="stat-item">
+          <div class="stat-value">${streak}</div>
+          <div class="stat-label">Day Streak</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">${total}</div>
+          <div class="stat-label">Total Logs</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">${topMood ? MOODS[topMood[0]].emoji : '—'}</div>
+          <div class="stat-label">${topMood ? 'Top Mood' : 'No Data'}</div>
+        </div>
+      `;
+
+      // Frequency chart
+      const chart = document.getElementById('freqChart');
+      chart.innerHTML = '';
+      const maxCount = Math.max(...Object.values(freq), 1);
+
+      MOODS.forEach((mood, i) => {
+        const count = freq[i] || 0;
+        const row = document.createElement('div');
+        row.className = 'freq-row';
+        row.innerHTML = `
+          <span class="freq-emoji">${mood.emoji}</span>
+          <div class="freq-bar-track">
+            <div class="freq-bar" style="width: 0%"></div>
+          </div>
+          <span class="freq-count">${count}</span>
+        `;
+        chart.appendChild(row);
+        // Animate bar
+        requestAnimationFrame(() => {
+          row.querySelector('.freq-bar').style.width = (count / maxCount * 100) + '%';
+        });
+      });
+    }
+
+    // ===================== EXPORT =====================
+    document.getElementById('exportBtn').addEventListener('click', () => {
+      const data = loadData();
+      const name = load('petName', 'My Pet');
+      const lines = [`Pet Mood Tracker - ${name}`, ''];
+
+      Object.entries(data).sort((a,b) => a[0].localeCompare(b[0])).forEach(([date, entry]) => {
+        const d = new Date(date + 'T12:00:00');
+        const line = `${DAY_NAMES[d.getDay()]} ${date}  ${MOODS[entry.mood].emoji} ${MOODS[entry.mood].label}${entry.note ? '  - ' + entry.note : ''}`;
+        lines.push(line);
+      });
+
+      const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'pet-mood-history.txt';
+      a.click();
+      showToast('History exported!');
+    });
+
+    // ===================== CLEAR =====================
     document.getElementById('clearBtn').addEventListener('click', () => {
-      if (confirm('Clear all mood data?')) {
-        localStorage.removeItem('petMoodData');
-        renderWeek();
-        showToast('Data cleared!');
+      if (confirm('Clear all mood data? This cannot be undone.')) {
+        saveData({});
+        selectedMood = null;
+        document.getElementById('noteInput').value = '';
+        picker.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+        document.getElementById('logBtn').disabled = true;
+        renderAll();
+        showToast('All data cleared');
       }
     });
 
-    // --- Init ---
-    renderWeek();
+    // ===================== RENDER ALL =====================
+    function renderAll() {
+      renderWeek();
+      if (document.getElementById('historyTab').classList.contains('active')) renderCalendar();
+      if (document.getElementById('statsTab').classList.contains('active')) renderStats();
+    }
+
+    // ===================== INIT =====================
+    renderAll();
   </script>
 </body>
 </html>
